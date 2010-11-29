@@ -19,6 +19,8 @@ WriteMakefile(
         'Digest::MD5' => 0,
         'XML::Simple' => 0,
         'Config::General' => 0,
+        'File::HomeDir' => 0,
+        'Carp' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'WWW-Phanfare-API-*' },

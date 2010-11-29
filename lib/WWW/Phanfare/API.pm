@@ -7,6 +7,8 @@ use Digest::MD5 qw(md5_hex);
 use Data::Dumper;
 use XML::Simple;
 use Config::General;
+use File::HomeDir;
+use Carp;
 
 =head1 NAME
 
@@ -56,16 +58,42 @@ sub _build_rest {
   $ua->getUseragent()->cookie_jar({});
   return $ua;
 }
-  
-has email => ( is => 'ro', isa => 'Str' );
-has password => ( is => 'ro', isa => 'Str' );
-has api_key => ( is => 'ro', isa => 'Str' );
-has private_key => ( is => 'ro', isa => 'Str' );
+
+# User Configs
+has email => ( is => 'rw', isa => 'Str' );
+has password => ( is => 'rw', isa => 'Str' );
+has api_key => ( is => 'rw', isa => 'Str' );
+has private_key => ( is => 'rw', isa => 'Str' );
+
 has site => ( is => 'ro', isa => 'Str', default => 'http://www.phanfare.com/api/?' );
-has uid => ( is => 'ro', isa => 'Str' );
-has requeststring => ( is => 'ro', isa => 'Str' );
+has target_uid => ( is => 'ro', isa => 'Str' );
+has requeststring => ( is => 'rw', isa => 'Str' );
 
 =head1 SUBROUTINES/METHODS
+
+=head2 readconfig
+
+Read in email, password, api_key and private_key from .phanfarerc config file
+
+=cut
+
+method readconfig {
+  # Make sure file exists
+  my $rcfile = File::HomeDir->my_home . "/.phanfarerc";
+  unless ( -r $rcfile ) {
+    croak "Cannot read $rcfile\n";
+  }
+  
+  # Read config file
+  my $conf = new Config::General($rcfile);
+  my %config = $conf->getall;
+  
+  # Read each required value
+  for my $key ( qw(email password api_key private_key) ) {
+    croak "$key not defined in $rcfile" unless $config{$key};
+    $self->$key( $config{$key} );
+  }
+}
 
 =head2 sign
 
@@ -77,6 +105,7 @@ method sign {
   my $req = $self->requeststring;
   my $sig = md5_hex( $req . $self->private_key );
   $self->append( 'sig' => $sig );
+  return $self;
 }
 
 =head2 append
@@ -89,8 +118,10 @@ method append( Str $key, Str $value ) {
   my $str;
   my $req = $self->requeststring;
   $str = '&' if $req;
+  $req ||= ''; $str ||= '';
   $str = $req . $str . sprintf "%s=%s", $key, $value;  
   $self->requeststring( $str );
+  return $self;
 }
 
 =head2 request
@@ -100,9 +131,47 @@ Place a request to REST API
 =cut
 
 method request {
-  $self->api->GET( $self->site . $self->requeststring);
-  my $data = $self->xml->XMLin( $self->api->responseContent() );
+  # Place request
+  my $rest = $self->rest;
+  $rest->GET( $self->site . $self->requeststring);
+
+  # Verify request is succesful
+  croak $rest->responseContent() unless $rest->responseCode() eq '200';
+
+  # Convert xml data to perl data structure
+  my $data = $self->xml->XMLin( $rest->responseContent() );
   return $data;
+}
+
+=head2 Authenticate
+
+Authentication request
+
+=cut
+
+method Authenticate {
+  $self->append( 'api_key'  => $self->api_key );
+  $self->append( 'email'    => $self->email );
+  $self->append( 'password' => $self->password );
+  $self->append( 'method'   => 'Authenticate' );
+  my $resp = $self->sign->request;
+  # Read uid from response
+  $self->target_uid( $resp->{session}{uid} );
+  return $self;
+}
+
+=head2 GetAlbumList
+
+List of albums
+
+=cut
+
+method GetAlbumList {
+  $self->rest->append( 'api_key'  => $self->api_key );
+  $self->rest->append( 'method'   => 'GetAlbumList' );
+  my $resp = $self->sign->request;
+  # Read list of albums
+  return $resp->{albums}{album};
 }
 
 =head1 AUTHOR
