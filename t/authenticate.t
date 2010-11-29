@@ -3,6 +3,6 @@ BEGIN { use_ok "WWW::Phanfare::API"};
 require_ok( 'WWW::Phanfare::API' );
 
 my $api = new WWW::Phanfare::API;
-$api->readconfig;
-$api->Authenticate;
+$api->_authentication;
+#diag("Target uid is " . $api->target_uid);
 ok( $api->target_uid > 0, "Target uid is " . $api->target_uid );
