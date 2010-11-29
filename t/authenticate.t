@@ -5,4 +5,4 @@ require_ok( 'WWW::Phanfare::API' );
 my $api = new WWW::Phanfare::API;
 $api->readconfig;
 $api->Authenticate;
-ok( $api->target_uid > 0, "Target uid is " . $api->targetuid );
+ok( $api->target_uid > 0, "Target uid is " . $api->target_uid );

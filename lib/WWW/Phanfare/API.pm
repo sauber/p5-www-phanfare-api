@@ -66,7 +66,7 @@ has api_key => ( is => 'rw', isa => 'Str' );
 has private_key => ( is => 'rw', isa => 'Str' );
 
 has site => ( is => 'ro', isa => 'Str', default => 'http://www.phanfare.com/api/?' );
-has target_uid => ( is => 'ro', isa => 'Str' );
+has target_uid => ( is => 'rw', isa => 'Str' );
 has requeststring => ( is => 'rw', isa => 'Str' );
 
 =head1 SUBROUTINES/METHODS
@@ -151,11 +151,12 @@ Authentication request
 
 method Authenticate {
   $self->append( 'api_key'  => $self->api_key );
-  $self->append( 'email'    => $self->email );
+  $self->append( 'email_address'    => $self->email );
   $self->append( 'password' => $self->password );
   $self->append( 'method'   => 'Authenticate' );
   my $resp = $self->sign->request;
   # Read uid from response
+  #warn Dumper $resp;
   $self->target_uid( $resp->{session}{uid} );
   return $self;
 }
