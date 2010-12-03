@@ -11,6 +11,9 @@ use Test::More qw(no_plan);
 
 eval 'use File::HomeDir';
 plan skip_all => 'File::HomeDir required' if $@;
+if ( $@ ) {
+  diag 
+}
 
 eval 'use Config::General';
 plan skip_all => 'Config::General required' if $@;
@@ -41,54 +44,24 @@ ok ( $api, 'Could not create WWW::Phanfare::API object' );
 plan skip_all => 'Could not create WWW::Phanfare::API object' unless $api;
 #diag( $api );
 
-# Make XML::Simple object
-#
-my $xml;
-eval 'use XML::Simple';
-if ( $@ ) {
-  fail('XML::Simple required');
-} else {
-  $xml = new XML::Simple;
-  ok ( $xml, 'xml object' );
-}
-
 # Test anonymous login
 #
 my $anon = $api->AuthenticateGuest();
-ok( $anon );
-
-# Check for valid response
-# 
-SKIP: {
-  skip 'XML::Simple required', 2, unless $xml and $anon;
-
-  my $ref = $xml->XMLin( $anon );
-  ok( ref $ref, 'XML response not parsing');
-  ok( $ref->{'stat'} eq 'ok', "Response stat not ok: $anon" );
-}
+ok( ref $anon, 'XML response not parsing');
+ok( $anon->{'stat'} eq 'ok', "Response stat not ok: $anon" );
 
 # Test user login when email_address and password is defined in .phanfarerc
 #
-my $user;
 SKIP: {
   skip 'Cannot test authentiction without email_address and password', 1,
     unless $config{email_address} and $config{password};
 
-  $user = $api->Authenticate(
+  my $user = $api->Authenticate(
     email_address => $config{email_address},
     password      => $config{password},
   );
 
-  ok ( $user );
-};
-
-# Check for valid response
-#
-SKIP: {
-  skip 'XML::Simple required', 2, unless $xml and $user;
-
-  $ref = $xml->XMLin( $user );
-  ok( ref $ref, 'XML response not parsing');
-  ok( $ref->{'stat'} eq 'ok', "Response stat not ok: $user" );
-  ok( $ref->{session}{uid} > 0, 'No target_uid in response' );
+  ok( ref $user, 'XML response not parsing');
+  ok( $user->{'stat'} eq 'ok', "Response stat not ok: $user" );
+  ok( $user->{session}{uid} > 0, 'No target_uid in response' );
 };
