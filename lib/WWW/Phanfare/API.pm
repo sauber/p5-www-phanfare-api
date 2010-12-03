@@ -16,6 +16,7 @@ use Carp;
 use REST::Client;
 use Digest::MD5 qw(md5_hex);
 use URI::Escape;
+use XML::Simple;
 
 our $VERSION = '0.01';
 our $site = 'http://www.phanfare.com/api/?';
@@ -80,9 +81,9 @@ sub AUTOLOAD {
     $self->{_rest}->responseContent()
   ) unless $self->{_rest}->responseCode() eq '200';
 
-  # Return the XML formatted response
-  return $self->{_rest}->responseContent();
-}
+  # Return has reference to data
+  return XML::Simple::XMLin $self->{_rest}->responseContent();
+} 
 
 # Make sure not caught by AUTOLOAD
 sub DESTROY {}
@@ -99,27 +100,44 @@ Create object. Developer API keys required.
 
 Authentication with account:
 
-    $papi->Authenticate(
+    my $session = $papi->Authenticate(
        email_address => 'my@email',
        password      => 'zzz',
     )
+    die "Cannot authenticate: $session->{code_value}"
+      unless $session->{'stat'} eq 'ok';
  
 Or authenticate as guest:
 
     $papi->AuthenticateGuest();
 
+List of albums:
+
+    my $albumlist = $papi->GetAlbumList(
+      target_uid => $session->{session}{uid}
+    )->{albums}{album};
+
+    printf(
+      "%s %s %s\n",
+      $_->{album_id}, substr($_->{album_start_date}, 0, 10), $_->{album_name}
+    ) for @$albumlist;
+
 =head1 DESCRIPTION
 
-Low level implementation of the Phanfare API. A developer API key is required
-for using this module.
+Perl wrapper the Phanfare API. A developer API key is required for using
+this module.
 
 =head1 SUBROUTINES/METHODS
 
 Refer to methods and required parameters are listed on
-http://help.phanfare.com/index.php/API . api_key and private_code is only
-required for the constructor and not for individual methods.
+http://help.phanfare.com/index.php/API .
 
-Methods return an unprocessed xml string from REST GET call.
+api_key and private_key is only required for the constructor,
+not for individual methods.
+
+Methods return hash references.
+The value of the 'stat' key will be 'ok' if the call succeeded.
+Value of 'code_value' key has error message.
 
 =head2 new
 
@@ -168,7 +186,15 @@ L<http://search.cpan.org/dist/WWW-Phanfare-API/>
 =back
 
 
-=head1 ACKNOWLEDGEMENTS
+=head1 SEE ALSO
+
+=over 4
+
+=item * Official Phanfare API Refence Guide
+
+L<http://help.phanfare.com/index.php/API>
+
+=back
 
 
 =head1 LICENSE AND COPYRIGHT
