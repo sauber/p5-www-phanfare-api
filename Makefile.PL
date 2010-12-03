@@ -13,13 +13,9 @@ WriteMakefile(
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,
-        'Moose'  => 0,
-        'MooseX::Method::Signatures' => 0,
         'REST::Client' => 0,
         'Digest::MD5' => 0,
         'XML::Simple' => 0,
-        'Config::General' => 0,
-        'File::HomeDir' => 0,
         'Carp' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
