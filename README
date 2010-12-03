@@ -1,55 +1,103 @@
-WWW-Phanfare-API
+NAME
+    WWW::Phanfare::API - Perl wrapper for Phanfare API
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+VERSION
+    Version 0.01
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+SYNOPSIS
+    Create object. Developer API keys required.
 
+        use WWW::Phanfare::API;
+        my $papi = WWW::Phanfare::API->new(
+          api_key     => 'xxx',
+          private_key => 'yyy',
+        );
 
-INSTALLATION
+    Authentication with account:
 
-To install this module, run the following commands:
+        my $session = $papi->Authenticate(
+           email_address => 'my@email',
+           password      => 'zzz',
+        )
+        die "Cannot authenticate: $session->{code_value}"
+          unless $session->{'stat'} eq 'ok';
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+    Or authenticate as guest:
 
-SUPPORT AND DOCUMENTATION
+        $papi->AuthenticateGuest();
 
-After installing, you can find documentation for this module with the
-perldoc command.
+    List of albums:
 
-    perldoc WWW::Phanfare::API
+        my $albumlist = $papi->GetAlbumList(
+          target_uid => $session->{session}{uid}
+        )->{albums}{album};
 
-You can also look for information at:
+        printf(
+          "%s %s %s\n",
+          $_->{album_id}, substr($_->{album_start_date}, 0, 10), $_->{album_name}
+        ) for @$albumlist;
 
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=WWW-Phanfare-API
+DESCRIPTION
+    Perl wrapper the Phanfare API. A developer API key is required for using
+    this module.
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/WWW-Phanfare-API
+SUBROUTINES/METHODS
+    Refer to methods and required parameters are listed on
+    http://help.phanfare.com/index.php/API .
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/WWW-Phanfare-API
+    api_key and private_key is only required for the constructor, not for
+    individual methods.
 
-    Search CPAN
-        http://search.cpan.org/dist/WWW-Phanfare-API/
+    Methods return hash references. The value of the 'stat' key will be 'ok'
+    if the call succeeded. Value of 'code_value' key has error message.
 
+  new
+    Create a new API agent.
+
+AUTHOR
+    Soren Dossing, "<netcom at sauber.net>"
+
+BUGS
+    Please report any bugs or feature requests to "bug-www-phanfare-api at
+    rt.cpan.org", or through the web interface at
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WWW-Phanfare-API>. I
+    will be notified, and then you'll automatically be notified of progress
+    on your bug as I make changes.
+
+SUPPORT
+    You can find documentation for this module with the perldoc command.
+
+        perldoc WWW::Phanfare::API
+
+    You can also look for information at:
+
+    *   RT: CPAN's request tracker
+
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=WWW-Phanfare-API>
+
+    *   AnnoCPAN: Annotated CPAN documentation
+
+        <http://annocpan.org/dist/WWW-Phanfare-API>
+
+    *   CPAN Ratings
+
+        <http://cpanratings.perl.org/d/WWW-Phanfare-API>
+
+    *   Search CPAN
+
+        <http://search.cpan.org/dist/WWW-Phanfare-API/>
+
+SEE ALSO
+    *   Official Phanfare API Refence Guide
+
+        <http://help.phanfare.com/index.php/API>
 
 LICENSE AND COPYRIGHT
+    Copyright 2010 Soren Dossing.
 
-Copyright (C) 2010 Soren Dossing
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of either: the GNU General Public License as published
+    by the Free Software Foundation; or the Artistic License.
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
+    See http://dev.perl.org/licenses/ for more information.
 
