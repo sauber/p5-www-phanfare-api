@@ -8,15 +8,12 @@
 
 use Test::More;
 
-#BEGIN { use_ok "WWW::Phanfare::API"};
-#BEGIN { use_ok "File::HomeDir"};
-#BEGIN { use_ok "CConfig::General"};
-
 eval 'use File::HomeDir; use File::HomeDir; use Config::General; use WWW::Phanfare::API';
 plan skip_all => "Required modules for album testing not available: $@" if $@;
 
 my $rcfile = File::HomeDir->my_home . "/.phanfarerc";
-unless ( -r $rcfile ) { diag "Cannot read $rcfile"; done_testing; exit; }
+#unless ( -r $rcfile ) { diag "Cannot read $rcfile"; done_testing; exit; }
+plan skip_all => "Cannot read $rcfile" unless -r $rcfile;
 my $conf = new_ok( Config::General => [ $rcfile ] );
 unless ( $conf ) { diag "Cannot read $rcfile"; done_testing; exit; }
 

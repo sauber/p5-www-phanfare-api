@@ -18,7 +18,7 @@ use Digest::MD5 qw(md5_hex);
 use URI::Escape;
 use XML::Simple;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 our $site = 'http://www.phanfare.com/api/?';
 our $AUTOLOAD;
 
