@@ -21,6 +21,7 @@ WriteMakefile(
         'Digest::MD5' => 0,
         'XML::Simple' => 0,
         'URI::Escape' => 0,
+        'File::Slurp' => 0,
         'Carp' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

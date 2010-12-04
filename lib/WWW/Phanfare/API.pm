@@ -17,6 +17,7 @@ use REST::Client;
 use Digest::MD5 qw(md5_hex);
 use URI::Escape;
 use XML::Simple;
+use File::Slurp;
 
 our $VERSION = '0.03';
 our $site = 'http://www.phanfare.com/api/?';
@@ -71,8 +72,15 @@ sub AUTOLOAD {
     $self->{_rest}->getUseragent()->cookie_jar({});
   }
 
+  # Include an image for upload?
+  my $image = _readimage( $param{filename} ) if $param{filename};
+
   # Send request
-  $self->{_rest}->GET( $site . $req );
+  if ( $image ) {
+    $self->{_rest}->PUT( $site . $req, $image );
+  } else {
+    $self->{_rest}->GET( $site . $req );
+  }
 
   # Receive response
   carp sprintf(
@@ -84,6 +92,12 @@ sub AUTOLOAD {
   # Return has reference to data
   return XML::Simple::XMLin $self->{_rest}->responseContent();
 } 
+
+# Prepare an image for uploading
+#
+sub _readimage {
+  read_file $_[0], binmode => ':raw';
+}
 
 # Make sure not caught by AUTOLOAD
 sub DESTROY {}
