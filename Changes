@@ -1,5 +1,8 @@
 Revision history for WWW-Phanfare-API
 
+0.02    2010-12-04
+        Make tests pass when no .phanfarerc file present
+
 0.01    2010-12-03
         First version, using autoload to wrap around REST call and XML parsing.
 
