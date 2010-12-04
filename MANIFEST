@@ -6,6 +6,8 @@ README
 t/00-load.t
 t/album.t
 t/boilerplate.t
+t/image.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
+t/testimage.png

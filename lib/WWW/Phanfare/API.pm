@@ -73,13 +73,14 @@ sub AUTOLOAD {
   }
 
   # Include an image for upload?
-  my $image = _readimage( $param{filename} ) if $param{filename};
+  my $image = read_file($param{filename}, binmode => ':raw')
+    if $param{filename};
 
   # Send request
   if ( $image ) {
-    $self->{_rest}->PUT( $site . $req, $image );
+    $self->{_rest}->PUT( $site.$req, $image );
   } else {
-    $self->{_rest}->GET( $site . $req );
+    $self->{_rest}->GET( $site.$req );
   }
 
   # Receive response
@@ -93,18 +94,12 @@ sub AUTOLOAD {
   return XML::Simple::XMLin $self->{_rest}->responseContent();
 } 
 
-# Prepare an image for uploading
-#
-sub _readimage {
-  read_file $_[0], binmode => ':raw';
-}
-
 # Make sure not caught by AUTOLOAD
 sub DESTROY {}
 
 =head1 SYNOPSIS
 
-Create object. Developer API keys required.
+Create agent. Developer API keys required.
 
     use WWW::Phanfare::API;
     my $papi = WWW::Phanfare::API->new(
@@ -120,12 +115,13 @@ Authentication with account:
     )
     die "Cannot authenticate: $session->{code_value}"
       unless $session->{'stat'} eq 'ok';
+    my $target_uid = $session->{session}{uid};
  
 Or authenticate as guest:
 
     $papi->AuthenticateGuest();
 
-List of albums:
+Get list of albums:
 
     my $albumlist = $papi->GetAlbumList(
       target_uid => $session->{session}{uid}
@@ -135,6 +131,28 @@ List of albums:
       "%s %s %s\n",
       $_->{album_id}, substr($_->{album_start_date}, 0, 10), $_->{album_name}
     ) for @$albumlist;
+
+Create new album, upload an image to it and delete it all again.
+
+    my $album = $papi->NewAlbum(
+      target_uid => $target_uid,
+    );
+
+    my $album_id   = $album->{album}{album_id};
+    my $section_id = $album->{album}{sections}{section}{section_id};
+
+    my $image = $papi->NewImage(
+      target_uid => $target_uid,
+      album_id   => $album_id,
+      section_id => $section_id,
+      filename   => 'IMG_1234.jpg',
+    );
+
+    my $del_album = $api->DeleteAlbum(
+      target_uid => $target_uid,
+      album_id   => $album_id,
+    );
+
 
 =head1 DESCRIPTION
 
