@@ -2,7 +2,7 @@ NAME
     WWW::Phanfare::API - Perl wrapper for Phanfare API
 
 VERSION
-    Version 0.02
+    Version 0.03
 
 SYNOPSIS
     Create object. Developer API keys required.

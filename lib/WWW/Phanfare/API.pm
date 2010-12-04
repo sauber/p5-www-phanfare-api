@@ -6,7 +6,7 @@ WWW::Phanfare::API - Perl wrapper for Phanfare API
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
@@ -18,7 +18,7 @@ use Digest::MD5 qw(md5_hex);
 use URI::Escape;
 use XML::Simple;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 our $site = 'http://www.phanfare.com/api/?';
 our $AUTOLOAD;
 
