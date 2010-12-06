@@ -78,7 +78,7 @@ sub AUTOLOAD {
 
   # Send request
   if ( $image ) {
-    $self->{_rest}->PUT( $site.$req, $image );
+    $self->{_rest}->POST( $site.$req, $image );
   } else {
     $self->{_rest}->GET( $site.$req );
   }
