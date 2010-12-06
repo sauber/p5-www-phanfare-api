@@ -12,7 +12,7 @@ use Test::More;
 # Make sure we have the auth values to perform a test
 #
 my %config;
-eval {
+eval '
   use Config::General;
   use File::HomeDir;
   use WWW::Phanfare::API;
@@ -21,8 +21,8 @@ eval {
   %config = Config::General->new( $rcfile )->getall;
   die unless $config{api_key} and $config{private_key}
          and $config{email_address} and $config{password};
-};
-plan skip_all => $@ if $@;
+';
+plan skip_all => "Modules or config not found: $@" if $@;
 
 # Create agent
 #
@@ -40,6 +40,7 @@ my $session = $api->Authenticate(
 ok ( $session->{'stat'} eq 'ok',  'Could not authenticate: ' . ( $session->{code_value} || '' ) );
 ok ( $session->{session}{uid},  'Could not get target_uid: ' . ( $session->{code_value} || '' ) );
 my $target_uid = $session->{session}{uid};
+diag "target_uid: $target_uid";
 
 # Create New Album
 #
@@ -51,6 +52,8 @@ ok ( $album->{album}{album_id},  'Could not get album_id: ' . ( $album->{code_va
 my $album_id = $album->{album}{album_id};
 ok ( $album->{album}{sections}{section}{section_id},  'Could not get section_id: ' . ( $album->{code_value} || '' ) );
 my $section_id = $album->{album}{sections}{section}{section_id};
+diag "album_id: $album_id";
+diag "section_id: $section_id";
 
 # Upload an image to newly created album
 #
@@ -65,6 +68,7 @@ my $image = $api->NewImage(
 ok ( $image->{'stat'} eq 'ok',  'Could not upload new image ' . ( $image->{code_value} || '' ) );
 ok ( $image->{imageinfo}{image_id},  'Could not get image_id: ' . ( $image->{code_value} || '' ) );
 my $image_id = $image->{imageinfo}{image_id};
+diag "image_id: $image_id";
 
 # Delete Image
 #
