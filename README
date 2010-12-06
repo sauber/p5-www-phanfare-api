@@ -2,10 +2,10 @@ NAME
     WWW::Phanfare::API - Perl wrapper for Phanfare API
 
 VERSION
-    Version 0.03
+    Version 0.05
 
 SYNOPSIS
-    Create object. Developer API keys required.
+    Create agent. Developer API keys required.
 
         use WWW::Phanfare::API;
         my $papi = WWW::Phanfare::API->new(
@@ -21,12 +21,13 @@ SYNOPSIS
         )
         die "Cannot authenticate: $session->{code_value}"
           unless $session->{'stat'} eq 'ok';
+        my $target_uid = $session->{session}{uid};
 
     Or authenticate as guest:
 
         $papi->AuthenticateGuest();
 
-    List of albums:
+    Get list of albums:
 
         my $albumlist = $papi->GetAlbumList(
           target_uid => $session->{session}{uid}
@@ -36,6 +37,27 @@ SYNOPSIS
           "%s %s %s\n",
           $_->{album_id}, substr($_->{album_start_date}, 0, 10), $_->{album_name}
         ) for @$albumlist;
+
+    Create new album, upload an image to it and delete it all again.
+
+        my $album = $papi->NewAlbum(
+          target_uid => $target_uid,
+        );
+
+        my $album_id   = $album->{album}{album_id};
+        my $section_id = $album->{album}{sections}{section}{section_id};
+
+        my $image = $papi->NewImage(
+          target_uid => $target_uid,
+          album_id   => $album_id,
+          section_id => $section_id,
+          filename   => 'IMG_1234.jpg',
+        );
+
+        my $del_album = $api->DeleteAlbum(
+          target_uid => $target_uid,
+          album_id   => $album_id,
+        );
 
 DESCRIPTION
     Perl wrapper the Phanfare API. A developer API key is required for using
