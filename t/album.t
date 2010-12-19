@@ -8,7 +8,7 @@
 
 use Test::More;
 
-eval 'use File::HomeDir; use File::HomeDir; use Config::General; use WWW::Phanfare::API';
+eval 'use File::HomeDir; use Config::General; use WWW::Phanfare::API';
 plan skip_all => "Required modules for album testing not available: $@" if $@;
 
 my $rcfile = File::HomeDir->my_home . "/.phanfarerc";
