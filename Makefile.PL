@@ -7,7 +7,7 @@ WriteMakefile(
     AUTHOR              => q{Soren Dossing <netcom@sauber.net>},
     VERSION_FROM        => 'lib/WWW/Phanfare/API.pm',
     ABSTRACT_FROM       => 'lib/WWW/Phanfare/API.pm',
-    ($ExtUtils::MakeMaker::VERSION >= 6.3002
+    ($ExtUtils::MakeMaker::VERSION gt 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),
     PL_FILES            => {},

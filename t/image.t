@@ -37,8 +37,8 @@ my $session = $api->Authenticate(
   email_address => $config{email_address},
   password      => $config{password},
 );
-ok ( $session->{'stat'} eq 'ok',  'Could not authenticate: ' . ( $session->{code_value} || '' ) );
-ok ( $session->{session}{uid},  'Could not get target_uid: ' . ( $session->{code_value} || '' ) );
+ok ( $session->{'stat'} eq 'ok',  'Authenticate: ' . ( $session->{code_value} || '' ) );
+ok ( $session->{session}{uid},  'Get target_uid: ' . ( $session->{code_value} || '' ) );
 my $target_uid = $session->{session}{uid};
 diag "target_uid: $target_uid";
 
@@ -47,10 +47,10 @@ diag "target_uid: $target_uid";
 my $album = $api->NewAlbum(
   target_uid => $target_uid,
 );
-ok ( $album->{'stat'} eq 'ok',  'Could not create new album: ' . ( $album->{code_value} || '' ) );
-ok ( $album->{album}{album_id},  'Could not get album_id: ' . ( $album->{code_value} || '' ) );
+ok ( $album->{'stat'} eq 'ok',  'Create new album: ' . ( $album->{code_value} || '' ) );
+ok ( $album->{album}{album_id},  'Get album_id: ' . ( $album->{code_value} || '' ) );
 my $album_id = $album->{album}{album_id};
-ok ( $album->{album}{sections}{section}{section_id},  'Could not get section_id: ' . ( $album->{code_value} || '' ) );
+ok ( $album->{album}{sections}{section}{section_id},  'Get section_id: ' . ( $album->{code_value} || '' ) );
 my $section_id = $album->{album}{sections}{section}{section_id};
 diag "album_id: $album_id";
 diag "section_id: $section_id";
@@ -65,10 +65,21 @@ my $image = $api->NewImage(
   caption => 'WWW::Phanfare::API Test Image',
   hidden => 1,
 );
-ok ( $image->{'stat'} eq 'ok',  'Could not upload new image ' . ( $image->{code_value} || '' ) );
-ok ( $image->{imageinfo}{image_id},  'Could not get image_id: ' . ( $image->{code_value} || '' ) );
+ok ( $image->{'stat'} eq 'ok',  'Upload new image ' . ( $image->{code_value} || '' ) );
+ok ( $image->{imageinfo}{image_id},  'Get image_id: ' . ( $image->{code_value} || '' ) );
 my $image_id = $image->{imageinfo}{image_id};
 diag "image_id: $image_id";
+
+# Fetch the image that was uploaded
+my $renditions = $image->{imageinfo}{renditions}{rendition};
+for my $rendition ( @$renditions ) {
+  if ( $rendition->{rendition_type} eq 'Full' ) {
+    ok( my $url = $rendition->{url}, "Download url" );
+    #diag "image url: $url";
+    ok( my $imagefull = $api->geturl( $url ), "Download image from $url" );
+    last;
+  }
+}
 
 # Delete Image
 #
@@ -78,7 +89,7 @@ my $del_image = $api->DeleteImage(
   section_id => $section_id,
   image_id => $image_id,
 );
-ok ( $del_image->{'stat'} eq 'ok',  'Could not delete image ' . ( $del_image->{code_value} || '' ) );
+ok ( $del_image->{'stat'} eq 'ok',  'Delete image ' . ( $del_image->{code_value} || '' ) );
 
 # Delete Album
 #
@@ -86,6 +97,6 @@ my $del_album = $api->DeleteAlbum(
   target_uid => $target_uid,
   album_id => $album_id,
 );
-ok ( $del_album->{'stat'} eq 'ok',  'Could not delete album ' . ( $del_album->{code_value} || '' ) );
+ok ( $del_album->{'stat'} eq 'ok',  'Delete album ' . ( $del_album->{code_value} || '' ) );
 
 done_testing();

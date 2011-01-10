@@ -19,7 +19,7 @@ use URI::Escape;
 use XML::Simple;
 use File::Slurp;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 our $site = 'http://www.phanfare.com/api/?';
 our $AUTOLOAD;
 
@@ -29,6 +29,35 @@ sub new {
   my $self  = { @_ };
   bless $self, $class;
   return $self;
+}
+
+# Load date from url
+sub geturl {
+  my($self,$url,$post) = @_;
+
+  # Create REST agent with cookies
+  unless ( $self->{_rest} ) {
+    $self->{_rest} = new REST::Client;
+    $self->{_rest}->getUseragent()->cookie_jar({});
+  }
+  my $rest = $self->{_rest};
+
+  # GET or POST
+  if ( $post ) {
+    $rest->POST( $url, $post );
+  } else {
+    $rest->GET( $url );
+  }
+
+  # Verify Response
+  carp sprintf(
+    "Return code %s: %s",
+    $rest->responseCode(),
+    $rest->responseContent()
+  ) unless $rest->responseCode() eq '200';
+
+  # Content
+  $rest->responseContent();
 }
 
 # All API methods implemented as autoload functions.
@@ -64,34 +93,11 @@ sub AUTOLOAD {
     map { sprintf '%s=%s', $_, uri_escape $param{$_} } keys %param;
   $req .= sprintf '&%s=%s', 'sig', $sig;
 
-  #warn "*** Request string: $req\n"; # XXX debug
-
-  # Create REST agent with cookies
-  unless ( $self->{_rest} ) {
-    $self->{_rest} = new REST::Client;
-    $self->{_rest}->getUseragent()->cookie_jar({});
-  }
-
   # Include an image for upload?
   my $image = read_file($param{filename}, binmode => ':raw')
     if $param{filename};
 
-  # Send request
-  if ( $image ) {
-    $self->{_rest}->POST( $site.$req, $image );
-  } else {
-    $self->{_rest}->GET( $site.$req );
-  }
-
-  # Receive response
-  carp sprintf(
-    "Return code %s: %s",
-    $self->{_rest}->responseCode(),
-    $self->{_rest}->responseContent()
-  ) unless $self->{_rest}->responseCode() eq '200';
-
-  # Return has reference to data
-  return XML::Simple::XMLin $self->{_rest}->responseContent();
+  return XML::Simple::XMLin $self->geturl( $site.$req, $image );
 } 
 
 # Make sure not caught by AUTOLOAD
@@ -102,14 +108,14 @@ sub DESTROY {}
 Create agent. Developer API keys required.
 
     use WWW::Phanfare::API;
-    my $papi = WWW::Phanfare::API->new(
+    my $api = WWW::Phanfare::API->new(
       api_key     => 'xxx',
       private_key => 'yyy',
     );
 
 Authentication with account:
 
-    my $session = $papi->Authenticate(
+    my $session = $api->Authenticate(
        email_address => 'my@email',
        password      => 'zzz',
     )
@@ -119,11 +125,11 @@ Authentication with account:
  
 Or authenticate as guest:
 
-    $papi->AuthenticateGuest();
+    $api->AuthenticateGuest();
 
 Get list of albums:
 
-    my $albumlist = $papi->GetAlbumList(
+    my $albumlist = $api->GetAlbumList(
       target_uid => $session->{session}{uid}
     )->{albums}{album};
 
@@ -134,14 +140,14 @@ Get list of albums:
 
 Create new album, upload an image to it and delete it all again.
 
-    my $album = $papi->NewAlbum(
+    my $album = $api->NewAlbum(
       target_uid => $target_uid,
     );
 
     my $album_id   = $album->{album}{album_id};
     my $section_id = $album->{album}{sections}{section}{section_id};
 
-    my $image = $papi->NewImage(
+    my $image = $api->NewImage(
       target_uid => $target_uid,
       album_id   => $album_id,
       section_id => $section_id,
@@ -152,6 +158,10 @@ Create new album, upload an image to it and delete it all again.
       target_uid => $target_uid,
       album_id   => $album_id,
     );
+
+Load an image.
+
+    my $image = $api->geturl( $url );
 
 
 =head1 DESCRIPTION
@@ -174,6 +184,10 @@ Value of 'code_value' key has error message.
 =head2 new
 
 Create a new API agent.
+
+=head2 geturl
+
+Load data from URL.
 
 =head1 AUTHOR
 
