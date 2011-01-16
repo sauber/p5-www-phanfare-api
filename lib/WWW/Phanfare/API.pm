@@ -6,7 +6,7 @@ WWW::Phanfare::API - Perl wrapper for Phanfare API
 
 =head1 VERSION
 
-Version 0.05
+Version 0.07
 
 =cut
 
@@ -17,9 +17,8 @@ use REST::Client;
 use Digest::MD5 qw(md5_hex);
 use URI::Escape;
 use XML::Simple;
-use File::Slurp;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 our $site = 'http://www.phanfare.com/api/?';
 our $AUTOLOAD;
 
@@ -77,6 +76,10 @@ sub AUTOLOAD {
   croak 'private_key not defined' unless $self->{private_key};
 
   my %param = @_;
+
+  # Is POST content included
+  delete $param{content} if my $content = $param{content};
+
   # Build signature request string
   my $req = join '&',
     sprintf('%s=%s', 'api_key', $self->{api_key}),
@@ -93,11 +96,7 @@ sub AUTOLOAD {
     map { sprintf '%s=%s', $_, uri_escape $param{$_} } keys %param;
   $req .= sprintf '&%s=%s', 'sig', $sig;
 
-  # Include an image for upload?
-  my $image = read_file($param{filename}, binmode => ':raw')
-    if $param{filename};
-
-  return XML::Simple::XMLin $self->geturl( $site.$req, $image );
+  return XML::Simple::XMLin $self->geturl( $site.$req, $content );
 } 
 
 # Make sure not caught by AUTOLOAD
@@ -146,12 +145,14 @@ Create new album, upload an image to it and delete it all again.
 
     my $album_id   = $album->{album}{album_id};
     my $section_id = $album->{album}{sections}{section}{section_id};
+    my $content    = read_file('IMG_1234.jpg', binmode => ':raw');
 
     my $image = $api->NewImage(
       target_uid => $target_uid,
       album_id   => $album_id,
       section_id => $section_id,
       filename   => 'IMG_1234.jpg',
+      content    => $content,
     );
 
     my $del_album = $api->DeleteAlbum(

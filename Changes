@@ -1,5 +1,8 @@
 Revision history for WWW-Phanfare-API
 
+0.07    2011-01-16
+        Pass POST content as parameter
+
 0.06    2011-01-10
         Load data from any url to enable fetching images
 

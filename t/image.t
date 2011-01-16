@@ -6,6 +6,7 @@
 
 use strict;
 use warnings;
+use File::Slurp;
 
 use Test::More;
 
@@ -57,13 +58,15 @@ diag "section_id: $section_id";
 
 # Upload an image to newly created album
 #
+my $rawimage = read_file('t/testimage.png', binmode => ':raw');
 my $image = $api->NewImage(
   target_uid => $target_uid,
-  album_id => $album_id,
+  album_id   => $album_id,
   section_id => $section_id,
-  filename => 't/testimage.png',
-  caption => 'WWW::Phanfare::API Test Image',
-  hidden => 1,
+  filename   => 'testimage.png',
+  caption    => 'WWW::Phanfare::API Test Image',
+  content    => $rawimage,
+  hidden     => 1,
 );
 ok ( $image->{'stat'} eq 'ok',  'Upload new image ' . ( $image->{code_value} || '' ) );
 ok ( $image->{imageinfo}{image_id},  'Get image_id: ' . ( $image->{code_value} || '' ) );
@@ -77,6 +80,7 @@ for my $rendition ( @$renditions ) {
     ok( my $url = $rendition->{url}, "Download url" );
     #diag "image url: $url";
     ok( my $imagefull = $api->geturl( $url ), "Download image from $url" );
+    ok( $rawimage eq $imagefull, 'Uploaded and downloaded image is same' );
     last;
   }
 }
