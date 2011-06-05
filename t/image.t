@@ -66,6 +66,7 @@ my $image = $api->NewImage(
   filename   => 'testimage.png',
   caption    => 'WWW::Phanfare::API Test Image',
   content    => $rawimage,
+  image_date => undef,
   hidden     => 1,
 );
 ok ( $image->{'stat'} eq 'ok',  'Upload new image ' . ( $image->{code_value} || '' ) );

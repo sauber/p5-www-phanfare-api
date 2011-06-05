@@ -84,7 +84,7 @@ sub AUTOLOAD {
   my $req = join '&',
     sprintf('%s=%s', 'api_key', $self->{api_key}),
     sprintf('%s=%s', 'method', $method),
-    map { sprintf '%s=%s', $_, $param{$_} } keys %param;
+    map { sprintf '%s=%s', $_, ($param{$_}||'') } keys %param;
 
   # Sign request string
   my $sig = md5_hex( $req . $self->{private_key} );
@@ -93,7 +93,7 @@ sub AUTOLOAD {
   $req = join '&',
     sprintf('%s=%s', 'api_key', $self->{api_key}),
     sprintf('%s=%s', 'method', $method),
-    map { sprintf '%s=%s', $_, uri_escape $param{$_} } keys %param;
+    map { sprintf '%s=%s', $_, uri_escape ($param{$_}||'') } keys %param;
   $req .= sprintf '&%s=%s', 'sig', $sig;
 
   return XML::Simple::XMLin $self->geturl( $site.$req, $content );
