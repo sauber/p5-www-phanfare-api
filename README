@@ -2,7 +2,7 @@ NAME
     WWW::Phanfare::API - Perl wrapper for Phanfare API
 
 VERSION
-    Version 0.05
+    Version 0.08
 
 SYNOPSIS
     Create agent. Developer API keys required.
@@ -46,12 +46,14 @@ SYNOPSIS
 
         my $album_id   = $album->{album}{album_id};
         my $section_id = $album->{album}{sections}{section}{section_id};
+        my $content    = read_file('IMG_1234.jpg', binmode => ':raw');
 
         my $image = $api->NewImage(
           target_uid => $target_uid,
           album_id   => $album_id,
           section_id => $section_id,
           filename   => 'IMG_1234.jpg',
+          content    => $content,
         );
 
         my $del_album = $api->DeleteAlbum(

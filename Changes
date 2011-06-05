@@ -1,5 +1,8 @@
 Revision history for WWW-Phanfare-API
 
+0.08    2011-06-05
+        Suppress warning on missing image_date
+
 0.07    2011-01-16
         Pass POST content as parameter
 
