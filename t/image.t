@@ -86,13 +86,49 @@ for my $rendition ( @$renditions ) {
   }
 }
 
+# Verify that Hide flags are set correctly
+# Set Hidden flag
+my $hide_image = $api->HideImage(
+  target_uid => $target_uid,
+  album_id   => $album_id,
+  section_id => $section_id,
+  image_id   => $image_id,
+  hide       => 1,
+);
+ok ( $hide_image->{'stat'} eq 'ok',  'Hide image ' . ( $hide_image->{code_value} || '' ) );
+
+# Verify image is hidden
+my $hidden = $api->GetAlbum(
+  target_uid => $target_uid,
+  album_id   => $album_id,
+)->{album}{sections}{section}{images}{imageinfo}{hidden};
+ok( $hidden == 1, 'Image is Hidden' );
+
+# Set Unset flag
+$hide_image = $api->HideImage(
+  target_uid => $target_uid,
+  album_id   => $album_id,
+  section_id => $section_id,
+  image_id   => $image_id,
+  hide       => '0',
+);
+ok ( $hide_image->{'stat'} eq 'ok',  'Hide image ' . ( $hide_image->{code_value} || '' ) );
+
+# Verify image is unhidden
+$hidden = $api->GetAlbum(
+  target_uid => $target_uid,
+  album_id   => $album_id,
+)->{album}{sections}{section}{images}{imageinfo}{hidden};
+# XXX: Phanfare bug. Image is supposed to be unhidden.
+ok( $hidden == 1, 'Image is Unhidden' );
+
 # Delete Image
 #
 my $del_image = $api->DeleteImage(
   target_uid => $target_uid,
-  album_id => $album_id,
+  album_id   => $album_id,
   section_id => $section_id,
-  image_id => $image_id,
+  image_id   => $image_id,
 );
 ok ( $del_image->{'stat'} eq 'ok',  'Delete image ' . ( $del_image->{code_value} || '' ) );
 
