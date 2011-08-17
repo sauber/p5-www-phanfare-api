@@ -1,5 +1,8 @@
 Revision history for WWW-Phanfare-API
 
+0.09    2011-08-17
+        Test hide/unhide image
+
 0.08    2011-06-05
         Suppress warning on missing image_date
 
